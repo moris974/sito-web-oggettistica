@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termini di vendita | {{SHOP_NAME}}</title>
+    <link rel="canonical" href="{{BASE_URL}}/termini">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-amber-50/30 text-slate-800 font-sans antialiased">
+<!-- MODELLO ORIENTATIVO: fai verificare questo testo da un professionista (consulente/avvocato/commercialista) prima di vendere. -->
+<header class="bg-white border-b border-amber-200">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/" class="flex items-center gap-3"><img src="{{LOGO}}" alt="{{SHOP_NAME}}" class="h-12 w-auto rounded"><span class="font-serif font-bold">{{SHOP_NAME}}</span></a>
+        <a href="/" class="text-sm text-red-700 underline">&larr; Torna al negozio</a>
+    </div>
+</header>
+<main class="max-w-3xl mx-auto px-4 py-10 leading-relaxed text-sm space-y-4">
+<h1 class="text-3xl font-serif font-bold text-slate-900">Termini di vendita</h1>
+
+<p class="text-slate-500">Condizioni generali di vendita online dei prodotti artigianali di {{LEGAL_NAME}} (di seguito &laquo;il Venditore&raquo;).</p>
+
+<h2 class="text-lg font-bold mt-6">1. Venditore</h2>
+<p>{{LEGAL_NAME}} &middot; P.IVA / C.F. {{VAT}} &middot; Sede: {{BUSINESS_ADDRESS}} &middot; Email: {{CONTACT_EMAIL}}.</p>
+
+<h2 class="text-lg font-bold mt-6">2. Prodotti</h2>
+<p>I prodotti sono realizzati a mano: lievi differenze di colore, dimensione e finitura rispetto alle foto sono una caratteristica del prodotto artigianale e non un difetto. Le quantit&agrave; disponibili sono limitate e indicate nel catalogo.</p>
+
+<h2 class="text-lg font-bold mt-6">3. Prezzi e coupon</h2>
+<p>I prezzi sono espressi in euro e comprendono le imposte applicabili. Le spese di spedizione sono indicate nel carrello prima della conferma dell&rsquo;ordine. I codici coupon non sono cumulabili tra loro, hanno le condizioni indicate (articolo, scadenza) e possono essere modificati o revocati per gli ordini futuri.</p>
+
+<h2 class="text-lg font-bold mt-6">4. Ordine e pagamento</h2>
+<p>L&rsquo;ordine si perfeziona con la conferma del pagamento. Sono accettati carte di credito/debito (tramite Stripe), PayPal e bonifico bancario. I dati della carta sono trattati direttamente dal fornitore di pagamento e non sono visibili al Venditore. In caso di bonifico l&rsquo;ordine viene evaso alla ricezione dell&rsquo;importo; i pezzi sono riservati per un tempo limitato. Dopo l&rsquo;ordine il cliente riceve un numero d&rsquo;ordine da citare in ogni comunicazione.</p>
+
+<h2 class="text-lg font-bold mt-6">5. Spedizione</h2>
+<p>La spedizione avviene all&rsquo;indirizzo indicato dal cliente. I tempi di preparazione sono quelli tipici di un laboratorio artigianale; eventuali tempi diversi (ad esempio per articoli su misura) vengono comunicati al cliente. Verifica il pacco alla consegna e segnala tempestivamente danni evidenti.</p>
+
+<h2 class="text-lg font-bold mt-6">6. Diritto di recesso</h2>
+<p>Il consumatore ha diritto di recedere entro <b>14 giorni</b> dal ricevimento della merce, senza indicarne il motivo, scrivendo a {{CONTACT_EMAIL}} (art. 52 e ss. del Codice del Consumo). Il bene deve essere restituito integro entro 14 giorni dalla comunicazione di recesso; le spese di restituzione sono a carico del consumatore. Il rimborso avviene entro 14 giorni dal recesso, con lo stesso mezzo di pagamento usato per l&rsquo;acquisto.</p>
+<p><b>Eccezione:</b> il diritto di recesso non si applica ai beni confezionati su misura o chiaramente personalizzati (ad esempio bomboniere personalizzate o articoli realizzati su specifica richiesta del cliente), ai sensi dell&rsquo;art. 59 del Codice del Consumo.</p>
+
+<h2 class="text-lg font-bold mt-6">7. Garanzia legale</h2>
+<p>Ai consumatori spetta la garanzia legale di conformit&agrave; di 2 anni dalla consegna (artt. 128 e ss. del Codice del Consumo). In caso di difetto contatta {{CONTACT_EMAIL}} indicando il numero d&rsquo;ordine e allegando alcune foto.</p>
+
+<h2 class="text-lg font-bold mt-6">8. Reclami e legge applicabile</h2>
+<p>Per reclami scrivi a {{CONTACT_EMAIL}}: risponderemo il prima possibile. Il contratto &egrave; regolato dalla legge italiana; per i consumatori resta fermo il foro del luogo di residenza o domicilio.</p>
+
+<h2 class="text-lg font-bold mt-6">9. Privacy</h2>
+<p>Il trattamento dei dati personali &egrave; descritto nell&rsquo;<a class="underline text-red-700" href="/privacy">Informativa privacy</a>.</p>
+
+</main>
+<footer class="text-center text-xs text-slate-500 py-8">&copy; {{YEAR}} {{LEGAL_NAME}} &middot; P.IVA / C.F. {{VAT}}</footer>
+</body>
+</html>

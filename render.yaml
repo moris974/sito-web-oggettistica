@@ -1,0 +1,31 @@
+# Alternativa a Vercel: Render con database Postgres esterno (es. Neon).
+# Il piano "free" va in standby dopo un po' di inattività (la prima visita è lenta).
+services:
+  - type: web
+    name: gt-hobbistica
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: BASE_URL
+        sync: false   # es. https://gt-hobbistica.onrender.com
+      - key: DATABASE_URL
+        sync: false   # stringa di connessione Postgres (Neon, Supabase...)
+      - key: ADMIN_PASSWORD
+        sync: false   # almeno 10 caratteri (usata solo al primo avvio)
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_ENV
+        value: live
