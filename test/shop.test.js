@@ -582,3 +582,93 @@ test('su Vercel senza DATABASE_URL: messaggio chiaro invece di un crash', async 
     delete require.cache[require.resolve('../server')];
   }
 });
+
+test('aspetto del sito: testi modificabili da admin, validati e senza XSS', async () => {
+  assert.equal((await api('/api/admin/content')).status, 401);
+  assert.equal((await api('/api/admin/content', { method: 'PUT', body: {}, headers: { Cookie: cookie } })).status, 403);
+
+  let r = await api('/api/admin/content', { auth: true });
+  assert.equal(r.status, 200);
+  const base0 = r.json.content;
+  assert.equal(r.json.defaults.heroTheme, 'rosso');
+  assert.ok(r.json.themes.verde.cls.includes('emerald'));
+  let page = (await api('/')).text;
+  assert.match(page, /Fiocchi Natalizi Extra Large/);
+  assert.match(page, /Fatto a Mano in Italia/);
+
+  const next = {
+    ...base0,
+    heroTitle: 'Titolo <b>nuovo</b> & bello',
+    heroText: 'Testo nuovo',
+    heroTheme: 'verde',
+    btn1Label: 'Vai al catalogo',
+    btn2Label: '',
+    badge2Label: '',
+    brandMain: 'Mia',
+    brandAccent: 'Bottega',
+    brandTagline: '',
+    navQuoteLabel: 'Scrivimi',
+    footerLinksTitle: 'Seguici',
+    footerLinks: [
+      { label: 'Instagram', url: 'https://instagram.com/mia' },
+      { label: 'Scrivici', url: 'mailto:ciao@example.com' },
+      { label: 'Chiamaci', url: 'tel:+39 340 1234567' },
+      { label: 'Privacy', url: '/privacy' },
+    ],
+    footerNote: 'Aperti il sabato <script>',
+    footerPayTitle: '',
+    footerPayText: '',
+    copyrightText: '© Mia Bottega',
+    showAdminLink: false,
+  };
+  r = await api('/api/admin/content', { method: 'PUT', auth: true, body: next });
+  assert.equal(r.status, 200, r.text);
+
+  page = (await api('/')).text;
+  assert.ok(page.includes('Titolo &lt;b&gt;nuovo&lt;/b&gt; &amp; bello'));
+  assert.ok(!page.includes('<b>nuovo</b>'));
+  assert.ok(!page.includes('Aperti il sabato <script>'));
+  assert.match(page, /Aperti il sabato &lt;script&gt;/);
+  assert.match(page, /from-emerald-950/);
+  assert.match(page, /Vai al catalogo/);
+  assert.ok(!page.includes('Preventivo WhatsApp'));
+  assert.match(page, /Mia <span class="text-red-700">Bottega<\/span>/);
+  assert.ok(!page.includes('Fatto a Mano in Italia'));
+  assert.match(page, /Scrivimi/);
+  assert.match(page, /href="https:\/\/instagram\.com\/mia" target="_blank" rel="noopener noreferrer"/);
+  assert.match(page, /href="mailto:ciao@example\.com"/);
+  assert.match(page, /href="tel:\+39 340 1234567"/);
+  assert.match(page, />Seguici</);
+  assert.ok(!page.includes('Area riservata'));
+  assert.match(page, /© Mia Bottega/);
+  assert.ok(!page.includes('I dati di pagamento sono gestiti'));
+  assert.ok(!/\{\{[A-Z_]+\}\}/.test(page));
+
+  // validazione
+  const bad = async (patch) => (await api('/api/admin/content', { method: 'PUT', auth: true, body: { ...next, ...patch } })).status;
+  assert.equal(await bad({ heroTheme: 'viola' }), 400);
+  assert.equal(await bad({ brandMain: '' }), 400);
+  assert.equal(await bad({ heroImage: 'javascript:alert(1)' }), 400);
+  assert.equal(await bad({ heroTitle: 'x'.repeat(141) }), 400);
+  assert.equal(await bad({ footerLinks: [{ label: 'x', url: 'javascript:alert(1)' }] }), 400);
+  assert.equal(await bad({ footerLinks: [{ label: 'x', url: '//evil.com' }] }), 400);
+  assert.equal(await bad({ footerLinks: [{ label: 'x', url: 'http://non-sicuro.it' }] }), 400);
+  assert.equal(await bad({ footerLinks: [{ label: '', url: 'https://ok.it' }] }), 400);
+  assert.equal(await bad({ footerLinks: Array.from({ length: 9 }, (_, i) => ({ label: `l${i}`, url: 'https://ok.it' })) }), 400);
+  // la pagina pubblica non è cambiata dopo i rifiuti
+  assert.match((await api('/')).text, /Mia <span/);
+
+  // riquadro nascosto
+  assert.equal(await bad({ heroVisible: false }), 200);
+  page = (await api('/')).text;
+  assert.ok(!page.includes('from-emerald-950'));
+  assert.ok(!page.includes('Titolo &lt;b&gt;'));
+
+  // ripristino ai valori originali
+  r = await api('/api/admin/content', { method: 'PUT', auth: true, body: (await api('/api/admin/content', { auth: true })).json.defaults });
+  assert.equal(r.status, 200);
+  page = (await api('/')).text;
+  assert.match(page, /Fiocchi Natalizi Extra Large/);
+  assert.match(page, /Area riservata/);
+  assert.match(page, /Fatto a Mano in Italia/);
+});

@@ -11,6 +11,7 @@ const auth = require('./lib/auth');
 const rl = require('./lib/ratelimit');
 const shop = require('./lib/shop');
 const pay = require('./lib/payments');
+const content = require('./lib/content');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -596,6 +597,21 @@ async function createApp(userConfig, overrides = {}) {
     sendJson(res, 200, { ok: true });
   });
 
+  route('GET', '/api/admin/content', async ({ req, res }) => {
+    await requireAdmin(req);
+    const themes = Object.fromEntries(Object.entries(content.THEMES).map(([k, v]) => [k, { label: v.label, cls: v.cls }]));
+    sendJson(res, 200, { content: content.contentFrom(await getSettings(db)), defaults: content.DEFAULT_CONTENT, themes });
+  });
+
+  route('PUT', '/api/admin/content', async ({ req, res }) => {
+    await requireAdmin(req);
+    const next = content.parseContent(await readJson(req), validImageRef);
+    const prev = content.contentFrom(await getSettings(db));
+    await setSetting(db, 'content', JSON.stringify(next));
+    if (prev.heroImage !== next.heroImage) await removeUploadIfLocal(prev.heroImage);
+    sendJson(res, 200, { ok: true });
+  });
+
   route('POST', '/api/admin/password', async ({ req, res }) => {
     await requireAdmin(req);
     const b = await readJson(req);
@@ -634,7 +650,23 @@ async function createApp(userConfig, overrides = {}) {
       priceRange: '€€',
     }).replace(/</g, '\\u003c');
     const pending = '[da inserire da Admin → Impostazioni]';
+    const c = content.contentFrom(s);
+    const raw = {
+      HERO: content.heroHtml(c),
+      BRAND_TAGLINE_HTML: content.taglineHtml(c),
+      FOOTER_NOTE_HTML: content.footerNoteHtml(c),
+      FOOTER_LINKS: content.footerLinksHtml(c),
+      FOOTER_PAY: content.footerPayHtml(c),
+      ADMIN_LINK: content.adminLinkHtml(c),
+    };
+    const year = String(new Date().getFullYear());
     const vars = {
+      BRAND_MAIN: c.brandMain,
+      BRAND_ACCENT: c.brandAccent,
+      NAV_QUOTE_LABEL: c.navQuoteLabel,
+      FLOAT_QUOTE_LABEL: c.floatQuoteLabel,
+      FOOTER_LINKS_TITLE: c.footerLinksTitle,
+      COPYRIGHT: c.copyrightText || `© ${year} ${s.shop_name}`,
       SHOP_NAME: s.shop_name,
       ANNOUNCEMENT: s.announcement,
       LOGO: s.logo,
@@ -643,10 +675,11 @@ async function createApp(userConfig, overrides = {}) {
       CONTACT_EMAIL: s.contact_email || pending,
       BUSINESS_ADDRESS: s.business_address || pending,
       BASE_URL: cfg.baseUrl,
-      YEAR: String(new Date().getFullYear()),
+      YEAR: year,
     };
     return html.replace(/\{\{([A-Z_]+)\}\}/g, (m, k) => {
       if (k === 'JSONLD') return jsonld;
+      if (k in raw) return raw[k]; // HTML già costruito e "escapato" da lib/content.js
       return k in vars ? escapeHtml(vars[k]) : m;
     });
   }

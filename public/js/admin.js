@@ -140,7 +140,7 @@
   }
 
   /* ------------------------------ dashboard ------------------------------ */
-  const tabs = { orders: 'Ordini', products: 'Articoli', coupons: 'Coupon', settings: 'Impostazioni' };
+  const tabs = { orders: 'Ordini', products: 'Articoli', coupons: 'Coupon', look: 'Aspetto del sito', settings: 'Impostazioni' };
   let currentTab = 'orders';
 
   async function showDashboard() {
@@ -169,7 +169,7 @@
 
   function renderTab(body) {
     body.replaceChildren(h('p', { class: 'text-slate-400 py-10 text-center' }, 'Caricamento…'));
-    const fn = { orders: renderOrders, products: renderProducts, coupons: renderCoupons, settings: renderSettings }[currentTab];
+    const fn = { orders: renderOrders, products: renderProducts, coupons: renderCoupons, look: renderLook, settings: renderSettings }[currentTab];
     fn(body).catch((e) => body.replaceChildren(h('p', { class: 'text-red-700 text-sm py-6' }, e.message)));
   }
 
@@ -367,6 +367,138 @@
       h('div', { class: 'lg:col-span-2' }, card(title('fa-solid fa-tags', 'Coupon attivi'), h('div', { class: 'overflow-x-auto' }, h('table', { class: 'w-full text-left text-xs text-slate-700' },
         h('thead', { class: 'bg-amber-50 uppercase text-amber-900 text-[10px] font-bold' }, h('tr', {}, ['Codice', 'Sconto', 'Vale per', 'Scadenza', 'Usi', ''].map((t) => h('th', { class: 'p-3' }, t)))),
         h('tbody', { class: 'divide-y divide-slate-100' }, rows)))))));
+  }
+
+  /* ------------------------------ aspetto del sito ------------------------------ */
+  async function renderLook(body) {
+    const { content: c, defaults, themes } = await api('/api/admin/content');
+    const msg = msgBox();
+    const txt = (v, extra = {}) => h('input', { class: inputCls, value: v ?? '', ...extra });
+    const f = {
+      brandMain: txt(c.brandMain, { maxlength: 30, required: true }),
+      brandAccent: txt(c.brandAccent, { maxlength: 40 }),
+      brandTagline: txt(c.brandTagline, { maxlength: 60 }),
+      navQuoteLabel: txt(c.navQuoteLabel, { maxlength: 40, required: true }),
+      floatQuoteLabel: txt(c.floatQuoteLabel, { maxlength: 40, required: true }),
+      heroVisible: h('input', { type: 'checkbox', checked: c.heroVisible }),
+      badgeLabel: txt(c.badgeLabel, { maxlength: 40 }),
+      badge2Label: txt(c.badge2Label, { maxlength: 40 }),
+      heroTitle: txt(c.heroTitle, { maxlength: 140 }),
+      heroText: h('textarea', { class: inputCls, rows: 3, maxlength: 400 }),
+      btn1Label: txt(c.btn1Label, { maxlength: 30 }),
+      btn2Label: txt(c.btn2Label, { maxlength: 30 }),
+      footerNote: h('textarea', { class: inputCls, rows: 2, maxlength: 300 }),
+      footerLinksTitle: txt(c.footerLinksTitle, { maxlength: 40, required: true }),
+      footerPayTitle: txt(c.footerPayTitle, { maxlength: 40 }),
+      footerPayText: h('textarea', { class: inputCls, rows: 3, maxlength: 400 }),
+      copyrightText: txt(c.copyrightText, { maxlength: 150, placeholder: '© 2026 Nome del negozio (se vuoto)' }),
+      showAdminLink: h('input', { type: 'checkbox', checked: c.showAdminLink }),
+    };
+    f.heroText.value = c.heroText;
+    f.footerNote.value = c.footerNote;
+    f.footerPayText.value = c.footerPayText;
+
+    // colore del riquadro
+    let theme = c.heroTheme;
+    const swatches = h('div', { class: 'flex flex-wrap gap-2' });
+    const drawThemes = () => swatches.replaceChildren(...Object.entries(themes).map(([key, t]) =>
+      h('button', { type: 'button', title: t.label, 'aria-pressed': String(theme === key), class: 'w-24 rounded-lg border-2 overflow-hidden text-[10px] font-bold text-slate-700 ' + (theme === key ? 'border-red-700 ring-2 ring-red-300' : 'border-slate-200 hover:border-slate-400'), onclick: () => { theme = key; drawThemes(); } },
+        h('div', { class: 'h-8 bg-gradient-to-r ' + t.cls }), h('div', { class: 'py-1 bg-white' }, t.label))));
+    drawThemes();
+
+    // immagine di sfondo del riquadro
+    let heroImage = c.heroImage || '';
+    const heroPrev = h('img', { alt: 'Anteprima sfondo', class: 'h-20 w-40 object-cover rounded-lg border border-amber-200 ' + (heroImage ? '' : 'hidden'), src: heroImage || undefined });
+    const heroFile = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', class: 'text-xs' });
+    const heroMsg = msgBox();
+    heroFile.addEventListener('change', async () => {
+      if (!heroFile.files[0]) return;
+      say(heroMsg, 'Caricamento immagine…', true);
+      try {
+        heroImage = await uploadImage(heroFile.files[0], { maxW: 1600, maxH: 900, keepAlpha: false });
+        heroPrev.src = heroImage; heroPrev.classList.remove('hidden');
+        say(heroMsg, 'Immagine caricata. Premi "Salva modifiche" per pubblicarla.', true);
+      } catch (e) { say(heroMsg, e.message, false); }
+    });
+    const heroRemove = btn('Togli immagine', 'text-xs text-red-600 hover:underline font-bold', () => {
+      heroImage = ''; heroPrev.classList.add('hidden'); heroFile.value = '';
+      say(heroMsg, 'Immagine rimossa. Premi "Salva modifiche" per pubblicare.', true);
+    });
+
+    // link del piè di pagina
+    let links = (c.footerLinks || []).map((l) => ({ ...l }));
+    const linksBox = h('div', { class: 'space-y-2' });
+    const drawLinks = () => {
+      linksBox.replaceChildren(
+        ...links.map((l, i) => {
+          const lab = h('input', { class: inputCls, maxlength: 40, placeholder: 'Testo (es. Instagram)', value: l.label });
+          const url = h('input', { class: inputCls, maxlength: 300, placeholder: 'https://…', value: l.url });
+          lab.addEventListener('input', () => { links[i].label = lab.value; });
+          url.addEventListener('input', () => { links[i].url = url.value; });
+          return h('div', { class: 'flex gap-2' }, lab, url, btn('✕', 'px-3 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-600 font-bold', () => { links.splice(i, 1); drawLinks(); }, { 'aria-label': 'Rimuovi link' }));
+        }),
+        links.length < 8 ? btn('+ Aggiungi un link', 'text-xs font-bold text-sky-700 hover:underline', () => { links.push({ label: '', url: '' }); drawLinks(); }) : null
+      );
+    };
+    drawLinks();
+
+    const collect = () => ({
+      brandMain: f.brandMain.value, brandAccent: f.brandAccent.value, brandTagline: f.brandTagline.value,
+      navQuoteLabel: f.navQuoteLabel.value, floatQuoteLabel: f.floatQuoteLabel.value,
+      heroVisible: f.heroVisible.checked, heroTheme: theme, heroImage,
+      badgeLabel: f.badgeLabel.value, badge2Label: f.badge2Label.value, heroTitle: f.heroTitle.value, heroText: f.heroText.value,
+      btn1Label: f.btn1Label.value, btn2Label: f.btn2Label.value,
+      footerNote: f.footerNote.value, footerLinksTitle: f.footerLinksTitle.value,
+      footerLinks: links.filter((l) => l.label.trim() || l.url.trim()),
+      footerPayTitle: f.footerPayTitle.value, footerPayText: f.footerPayText.value,
+      copyrightText: f.copyrightText.value, showAdminLink: f.showAdminLink.checked,
+    });
+
+    const save = async (payload, okText) => {
+      try {
+        await api('/api/admin/content', { method: 'PUT', body: payload });
+        say(msg, okText, true);
+        return true;
+      } catch (e) { say(msg, e.message, false); return false; }
+    };
+
+    const hint = (t) => h('p', { class: 'text-[11px] text-slate-500 -mt-1' }, t);
+    const section = (ic, t, ...kids) => card(title(ic, t), h('div', { class: 'space-y-3' }, ...kids));
+
+    const form = h('form', { class: 'space-y-8' },
+      section('fa-solid fa-window-maximize', 'Testata (in alto)',
+        hint('Il logo e il messaggio della barra scura in alto si cambiano da Impostazioni.'),
+        h('div', { class: 'grid sm:grid-cols-2 gap-3' }, labeled('Nome (parte scura)', f.brandMain), labeled('Nome (parte rossa)', f.brandAccent)),
+        labeled('Sottotitolo sotto il nome (vuoto = nascosto)', f.brandTagline),
+        h('div', { class: 'grid sm:grid-cols-2 gap-3' }, labeled('Pulsante "su misura" in alto', f.navQuoteLabel), labeled('Pulsante WhatsApp fluttuante', f.floatQuoteLabel))),
+      section('fa-solid fa-rectangle-ad', 'Riquadro principale (la parte colorata)',
+        h('label', { class: 'flex items-center gap-2 text-sm font-semibold text-slate-700' }, f.heroVisible, 'Mostra il riquadro nella pagina iniziale'),
+        labeled('Colore', swatches),
+        labeled('Immagine di sfondo (facoltativa)', h('div', { class: 'space-y-2' }, heroFile, heroPrev, h('div', {}, heroRemove), heroMsg)),
+        h('div', { class: 'grid sm:grid-cols-2 gap-3' }, labeled('Etichetta gialla (vuoto = nascosta)', f.badgeLabel), labeled('Seconda etichetta (vuoto = nascosta)', f.badge2Label)),
+        labeled('Titolo grande', f.heroTitle),
+        labeled('Testo sotto il titolo', f.heroText),
+        h('div', { class: 'grid sm:grid-cols-2 gap-3' }, labeled('Primo pulsante (porta ai prodotti; vuoto = nascosto)', f.btn1Label), labeled('Secondo pulsante (apre il preventivo; vuoto = nascosto)', f.btn2Label))),
+      section('fa-solid fa-shoe-prints', 'Piè di pagina',
+        hint('Ragione sociale, partita IVA, sede ed email si cambiano da Impostazioni.'),
+        labeled('Nota sotto i dati del venditore (es. orari, vuoto = nascosta)', f.footerNote),
+        labeled('Titolo della colonna dei link', f.footerLinksTitle),
+        labeled('Link aggiuntivi (Termini e Privacy ci sono già). Accettati https://, mailto:, tel: o /percorso', linksBox),
+        labeled('Titolo della colonna pagamenti (vuoto = nascosto)', f.footerPayTitle),
+        labeled('Testo della colonna pagamenti', f.footerPayText),
+        labeled('Riga del copyright', f.copyrightText),
+        h('label', { class: 'flex items-center gap-2 text-sm font-semibold text-slate-700' }, f.showAdminLink, 'Mostra il link "Area riservata" nel piè di pagina (puoi sempre aprire /admin scrivendolo)')),
+      h('div', { class: 'flex flex-wrap items-center gap-3' },
+        h('button', { type: 'submit', class: 'bg-red-700 hover:bg-red-800 text-white font-bold px-6 py-2.5 rounded-lg text-sm shadow transition' }, 'Salva modifiche'),
+        btn('Ripristina testi originali', 'bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-lg text-sm', async () => {
+          if (!confirm('Ripristinare tutti i testi e i colori originali del sito?')) return;
+          if (await save(defaults, 'Testi originali ripristinati.')) renderTab(body);
+        }),
+        h('a', { href: '/', target: '_blank', rel: 'noopener', class: 'text-sm font-bold text-sky-700 hover:underline' }, 'Apri il sito in una nuova scheda ↗')),
+      msg);
+    form.addEventListener('submit', async (e) => { e.preventDefault(); await save(collect(), 'Modifiche pubblicate! Ricarica il sito per vederle.'); });
+
+    body.replaceChildren(form);
   }
 
   /* ------------------------------ impostazioni ------------------------------ */

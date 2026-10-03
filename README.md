@@ -57,7 +57,19 @@ Un metodo compare nel carrello solo se è configurato.
 
 ## Pannello admin (`/admin`)
 
-Ordini (stati, WhatsApp al cliente, note, export CSV), articoli con upload foto, coupon (per carrello o per articolo, con scadenza), impostazioni (logo da file, spedizione, IBAN, dati legali, cambio password, stato pagamenti).
+Ordini (stati, WhatsApp al cliente, note, export CSV), articoli con upload foto, coupon (per carrello o per articolo, con scadenza), **aspetto del sito**, impostazioni (logo da file, spedizione, IBAN, dati legali, cambio password, stato pagamenti).
+
+### Aspetto del sito (scheda "Aspetto del sito")
+
+Da qui modifichi senza toccare il codice:
+
+- **Testata**: nome in due colori, sottotitolo, testo dei pulsanti "su misura" e WhatsApp.
+- **Riquadro principale (la parte colorata)**: mostra/nascondi, 5 colori, immagine di sfondo, etichette, titolo, testo e pulsanti (un campo lasciato vuoto nasconde quell'elemento).
+- **Piè di pagina**: nota, titolo e link aggiuntivi (Instagram, Facebook, email, telefono, fino a 8), colonna pagamenti, riga del copyright, link "Area riservata".
+- **Ripristina testi originali** riporta tutto com'era.
+
+Logo e messaggio della barra scura si cambiano da *Impostazioni*, insieme ai dati del venditore (ragione sociale, P.IVA, sede, email) che compaiono nel piè di pagina.
+I link accettati sono `https://…`, `mailto:…`, `tel:…` e percorsi interni come `/privacy`.
 
 Lo stock viene riservato alla creazione dell'ordine e rimesso in magazzino se l'ordine viene annullato, scade la sessione Stripe o un pagamento resta incompleto oltre 45 minuti.
 

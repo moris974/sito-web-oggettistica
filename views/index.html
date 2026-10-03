@@ -34,16 +34,14 @@
                 <a href="/" class="flex items-center space-x-3 py-2" aria-label="Home">
                     <img id="site-logo" src="{{LOGO}}" alt="{{SHOP_NAME}}" class="h-16 w-auto object-contain rounded-lg shadow-sm border border-amber-200/50">
                     <div class="hidden sm:block">
-                        <span class="text-lg font-serif font-bold text-slate-900 tracking-tight block leading-none">G&amp;T <span class="text-red-700">Artigianato</span></span>
-                        <span class="text-[10px] text-emerald-700 font-bold uppercase tracking-widest flex items-center gap-1 mt-0.5">
-                            <i class="fa-solid fa-circle-check"></i> Fatto a Mano in Italia
-                        </span>
+                        <span class="text-lg font-serif font-bold text-slate-900 tracking-tight block leading-none">{{BRAND_MAIN}} <span class="text-red-700">{{BRAND_ACCENT}}</span></span>
+                        {{BRAND_TAGLINE_HTML}}
                     </div>
                 </a>
 
                 <div class="flex items-center gap-2">
                     <button type="button" data-action="quote" class="hidden md:flex text-emerald-700 font-semibold hover:text-emerald-800 transition items-center gap-1 text-sm px-2">
-                        <i class="fa-brands fa-whatsapp text-lg"></i> Ordini su misura
+                        <i class="fa-brands fa-whatsapp text-lg"></i> {{NAV_QUOTE_LABEL}}
                     </button>
                     <button type="button" id="open-cart" class="relative p-2 text-slate-700 hover:text-red-700 transition" aria-label="Apri il carrello">
                         <i class="fa-solid fa-basket-shopping text-2xl"></i>
@@ -55,25 +53,8 @@
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Hero -->
-        <section class="relative rounded-2xl bg-gradient-to-r from-red-950 via-red-900 to-amber-950 text-white p-6 md:p-10 mb-10 shadow-xl overflow-hidden border border-amber-500/20">
-            <div class="relative z-10 max-w-2xl">
-                <div class="flex flex-wrap items-center gap-2 mb-3">
-                    <span class="bg-amber-400 text-slate-950 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">G&amp;T Fatto a Mano</span>
-                    <span class="bg-emerald-600/80 text-white text-[11px] px-2.5 py-0.5 rounded-full flex items-center gap-1"><i class="fa-solid fa-shield"></i> Pagamenti protetti</span>
-                </div>
-                <h1 class="text-3xl md:text-5xl font-serif font-bold leading-tight mb-4">Fiocchi Natalizi Extra Large &amp; Bomboniere Artigianali</h1>
-                <p class="text-amber-100 text-sm md:text-base mb-6">Creazioni uniche fatte a mano da G&amp;T con sconti esclusivi in formato coupon. Pagamenti sicuri e ordini personalizzati via WhatsApp.</p>
-                <div class="flex flex-wrap gap-3">
-                    <a href="#prodotti" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-6 py-3 rounded-lg transition shadow-md flex items-center gap-2">
-                        <i class="fa-solid fa-tag"></i> Scopri le offerte
-                    </a>
-                    <button type="button" data-action="quote" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-lg transition shadow-md flex items-center gap-2">
-                        <i class="fa-brands fa-whatsapp text-xl"></i> Preventivo WhatsApp
-                    </button>
-                </div>
-            </div>
-        </section>
+        <!-- Riquadro principale (modificabile da Admin → Aspetto del sito) -->
+        {{HERO}}
 
         <!-- Categorie -->
         <div id="filters" class="flex flex-wrap gap-2 mb-8 border-b border-amber-200/80 pb-4" role="tablist" aria-label="Categorie"></div>
@@ -90,29 +71,28 @@
                 <p>P.IVA / C.F.: {{VAT}}</p>
                 <p>Sede: {{BUSINESS_ADDRESS}}</p>
                 <p>Email: {{CONTACT_EMAIL}}</p>
+                {{FOOTER_NOTE_HTML}}
             </div>
             <div>
-                <p class="font-bold text-amber-100 mb-1">Informazioni</p>
+                <p class="font-bold text-amber-100 mb-1">{{FOOTER_LINKS_TITLE}}</p>
                 <ul class="space-y-1">
                     <li><a class="hover:text-amber-300 underline" href="/termini">Termini di vendita e diritto di recesso</a></li>
                     <li><a class="hover:text-amber-300 underline" href="/privacy">Informativa privacy</a></li>
                     <li><button type="button" data-action="quote" class="hover:text-amber-300 underline">Richiedi un preventivo su misura</button></li>
+                    {{FOOTER_LINKS}}
                 </ul>
             </div>
-            <div>
-                <p class="font-bold text-amber-100 mb-1">Pagamenti</p>
-                <p>Carta, PayPal e bonifico. I dati di pagamento sono gestiti direttamente dai circuiti Stripe e PayPal: il sito non li vede né li conserva.</p>
-            </div>
+            {{FOOTER_PAY}}
         </div>
         <div class="border-t border-white/10 py-4 text-center">
-            &copy; {{YEAR}} {{SHOP_NAME}} &middot; <a href="/admin" class="hover:text-amber-300">Area riservata</a>
+            {{COPYRIGHT}}{{ADMIN_LINK}}
         </div>
     </footer>
 
     <!-- Pulsante WhatsApp fluttuante -->
     <button type="button" data-action="quote" class="fixed bottom-6 right-6 z-30 bg-emerald-600 hover:bg-emerald-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2 transition hover:scale-105" aria-label="Richiedi un preventivo su WhatsApp">
         <i class="fa-brands fa-whatsapp text-2xl"></i>
-        <span class="hidden md:inline font-bold text-sm">Richiedi su misura</span>
+        <span class="hidden md:inline font-bold text-sm">{{FLOAT_QUOTE_LABEL}}</span>
     </button>
 
     <!-- Carrello -->
